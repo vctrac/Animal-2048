@@ -1,5 +1,10 @@
 {
   "background_color": "#000000",
+  "icons": [
+  {
+    "src": "icon.png"
+  }
+  ]
   "dir": "ltr",
   "display": "standalone",
   "name": "2048 bichos",
