@@ -1,18 +1,22 @@
 {
-  "background_color": "#000000",
+  "name": "Animal Evolution 2048",
+  "short_name": "2048 Animais",
+  "start_url": "index.html",
+  "display": "fullscreen",
+  "background_color": "#121214",
+  "theme_color": "#121214",
   "icons": [
-  {
-    "src": "icon.png"
-  }
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
-  "dir": "ltr",
-  "display": "standalone",
-  "name": "2048 bichos",
-  "orientation": "portrait",
-  "scope": "/",
-  "short_name": "2048 bichos",
-  "start_url": "/",
-  "theme_color": "#000000",
-  "id": "Bichos2048",
-  "description": "2048 com bichinhos."
 }
