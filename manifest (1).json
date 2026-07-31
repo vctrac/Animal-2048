@@ -1,0 +1,13 @@
+{
+  "background_color": "#000000",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "2048 bichos",
+  "orientation": "portrait",
+  "scope": "/",
+  "short_name": "2048 bichos",
+  "start_url": "/",
+  "theme_color": "#000000",
+  "id": "Bichos2048",
+  "description": "2048 com bichinhos."
+}
