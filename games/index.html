@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Retro Snake 🍏</title>
+    <style>
+        :root {
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        body {
+            background-color: #121214;
+            color: #e1e1e6;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 16px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin: 0;
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+            letter-spacing: -1px;
+        }
+
+        .scores {
+            display: flex;
+            gap: 8px;
+        }
+
+        .score-box {
+            background: #202024;
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 1px solid #29292e;
+        }
+
+        .score-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            color: #a8a8b3;
+            font-weight: bold;
+        }
+
+        .score-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .board-container {
+            position: relative;
+            background: #202024;
+            padding: 12px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.05);
+            width: 100%;
+            aspect-ratio: 1;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            background-color: #18181b;
+            border-radius: 10px;
+            width: 100%;
+            height: 100%;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
+        }
+
+        .controls-hint {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #888;
+            text-align: center;
+        }
+
+        .btn-action {
+            margin-top: 15px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.4);
+            transition: transform 0.1s, background 0.2s;
+            width: 100%;
+        }
+        .btn-action:active {
+            transform: scale(0.95);
+            background: #219653;
+        }
+
+        #gameOverlay {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            right: 12px;
+            bottom: 12px;
+            background: rgba(18, 18, 20, 0.9);
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 16px;
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        #gameOverlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #gameOverlay h2 {
+            font-size: 2rem;
+            margin: 0 0 10px 0;
+            color: #2ecc71;
+        }
+        #gameOverlay p {
+            color: #a8a8b3;
+            font-size: 0.9rem;
+            margin: 0 0 20px 0;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Snake 🍏</h1>
+            <div class="scores">
+                <div class="score-box">
+                    <span class="score-label">Score</span>
+                    <span class="score-value" id="score">0</span>
+                </div>
+                <div class="score-box">
+                    <span class="score-label">Best</span>
+                    <span class="score-value" id="bestScore">0</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="board-container" id="boardContainer">
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+            <div id="gameOverlay" class="active">
+                <h2 id="overlayTitle">Retro Snake 🍏</h2>
+                <p id="overlayText">Use as setas do teclado ou deslize o dedo na tela para começar a jogar.</p>
+                <button class="btn-action" id="overlayBtn" onclick="game.handleOverlayClick()">Jogar</button>
+            </div>
+        </div>
+
+        <div class="controls-hint">🍏 Maçã (+10) | 🟡 Pílula (Encolhe & Acelera ⚡)</div>
+        <button class="btn-action" style="background:#29292e; color:#ccc;" onclick="window.location.href='../../index.html'">Voltar ao Hub</button>
+    </div>
+
+    <script>
+        class SoundFX {
+            constructor() { this.ctx = null; }
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') { this.ctx.resume(); }
+            }
+            playEat() {
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                const now = this.ctx.currentTime;
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            }
+            playShrink() {
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                const now = this.ctx.currentTime;
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(250, now + 0.15);
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            }
+            playGameOver() {
+                this.init();
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                [250, 200, 150, 100].forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(freq, now + i * 0.1);
+                    gain.gain.setValueAtTime(0.2, now + i * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.15);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + i * 0.1);
+                    osc.stop(now + i * 0.1 + 0.15);
+                });
+            }
+        }
+
+        class SnakeGame {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.gridSize = 20;
+                this.tileCount = this.canvas.width / this.gridSize;
+                
+                this.score = 0;
+                this.bestScore = localStorage.getItem('bestScore_snake') || 0;
+                document.getElementById('bestScore').innerText = this.bestScore;
+
+                this.sound = new SoundFX();
+                this.resetState();
+                this.setupInputs();
+                
+                this.lastTime = 0;
+                this.normalInterval = 110;
+                this.fastInterval = 65; // Velocidade ao consumir a pílula amarela
+                this.gameInterval = this.normalInterval;
+                this.speedBoostEndTime = 0;
+
+                requestAnimationFrame(this.loop.bind(this));
+            }
+
+            resetState() {
+                this.snake = [
+                    {x: 10, y: 10},
+                    {x: 9, y: 10},
+                    {x: 8, y: 10}
+                ];
+                this.dx = 1;
+                this.dy = 0;
+                this.nextDx = 1;
+                this.nextDy = 0;
+                this.score = 0;
+                this.updateScore(0);
+                this.food = {x: 15, y: 10};
+                this.shrinkFood = {x: 0, y: 0, active: false};
+                if (this.shrinkTimer) clearTimeout(this.shrinkTimer);
+                
+                this.gameInterval = this.normalInterval;
+                this.speedBoostEndTime = 0;
+                this.gameStarted = false;
+                this.isGameOver = false;
+                this.render();
+            }
+
+            spawnFood() {
+                while (true) {
+                    this.food = {
+                        x: Math.floor(Math.random() * this.tileCount),
+                        y: Math.floor(Math.random() * this.tileCount)
+                    };
+                    let collision = this.snake.some(part => part.x === this.food.x && part.y === this.food.y) ||
+                                    (this.shrinkFood.active && this.shrinkFood.x === this.food.x && this.shrinkFood.y === this.food.y);
+                    if (!collision) break;
+                }
+            }
+
+            spawnShrinkFood() {
+                if (this.shrinkFood.active) return;
+                while (true) {
+                    let x = Math.floor(Math.random() * this.tileCount);
+                    let y = Math.floor(Math.random() * this.tileCount);
+                    let collision = this.snake.some(part => part.x === x && part.y === y) ||
+                                    (this.food.x === x && this.food.y === y);
+                    if (!collision) {
+                        this.shrinkFood = {x, y, active: true};
+                        if (this.shrinkTimer) clearTimeout(this.shrinkTimer);
+                        this.shrinkTimer = setTimeout(() => {
+                            this.shrinkFood.active = false;
+                        }, 5000);
+                        break;
+                    }
+                }
+            }
+
+            updateScore(inc) {
+                this.score += inc;
+                document.getElementById('score').innerText = this.score;
+                if (this.score > this.bestScore) {
+                    this.bestScore = this.score;
+                    localStorage.setItem('bestScore_snake', this.bestScore);
+                    document.getElementById('bestScore').innerText = this.bestScore;
+                }
+            }
+
+            startMatch() {
+                this.gameStarted = true;
+                document.getElementById('gameOverlay').classList.remove('active');
+            }
+
+            restart() {
+                this.resetState();
+                this.startMatch();
+            }
+
+            handleOverlayClick() {
+                if (this.isGameOver) {
+                    this.restart();
+                } else {
+                    this.startMatch();
+                }
+            }
+
+            setupInputs() {
+                window.addEventListener('keydown', e => {
+                    this.sound.init();
+                    let handled = false;
+                    switch(e.key) {
+                        case 'ArrowUp':
+                            if (this.dy === 0) { this.nextDx = 0; this.nextDy = -1; handled = true; }
+                            break;
+                        case 'ArrowDown':
+                            if (this.dy === 0) { this.nextDx = 0; this.nextDy = 1; handled = true; }
+                            break;
+                        case 'ArrowLeft':
+                            if (this.dx === 0) { this.nextDx = -1; this.nextDy = 0; handled = true; }
+                            break;
+                        case 'ArrowRight':
+                            if (this.dx === 0) { this.nextDx = 1; this.nextDy = 0; handled = true; }
+                            break;
+                    }
+                    if (handled) {
+                        if (this.isGameOver) {
+                            this.restart();
+                        } else if (!this.gameStarted) {
+                            this.startMatch();
+                        }
+                    }
+                });
+
+                let touchStartX = 0, touchStartY = 0;
+                window.addEventListener('touchstart', e => {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    this.sound.init();
+                }, {passive: true});
+
+                window.addEventListener('touchend', e => {
+                    if (!touchStartX || !touchStartY) return;
+                    let dx = e.changedTouches[0].clientX - touchStartX;
+                    let dy = e.changedTouches[0].clientY - touchStartY;
+                    let absDx = Math.abs(dx), absDy = Math.abs(dy);
+
+                    if (Math.max(absDx, absDy) > 25) {
+                        let moved = false;
+                        if (absDx > absDy) {
+                            if (dx > 0 && this.dx === 0) { this.nextDx = 1; this.nextDy = 0; moved = true; }
+                            else if (dx < 0 && this.dx === 0) { this.nextDx = -1; this.nextDy = 0; moved = true; }
+                        } else {
+                            if (dy > 0 && this.dy === 0) { this.nextDx = 0; this.nextDy = 1; moved = true; }
+                            else if (dy < 0 && this.dy === 0) { this.nextDx = 0; this.nextDy = -1; moved = true; }
+                        }
+                        if (moved) {
+                            if (this.isGameOver) {
+                                this.restart();
+                            } else if (!this.gameStarted) {
+                                this.startMatch();
+                            }
+                        }
+                    }
+                    touchStartX = 0; touchStartY = 0;
+                }, {passive: true});
+            }
+
+            update() {
+                if (!this.gameStarted || this.isGameOver) return;
+
+                // Verificar expiração do efeito de velocidade da pílula amarela
+                if (this.gameInterval === this.fastInterval && Date.now() > this.speedBoostEndTime) {
+                    this.gameInterval = this.normalInterval;
+                }
+
+                this.dx = this.nextDx;
+                this.dy = this.nextDy;
+
+                let head = {x: this.snake[0].x + this.dx, y: this.snake[0].y + this.dy};
+
+                if (head.x < 0 || head.x >= this.tileCount || head.y < 0 || head.y >= this.tileCount ||
+                    this.snake.some(part => part.x === head.x && part.y === head.y)) {
+                    this.triggerGameOver();
+                    return;
+                }
+
+                this.snake.unshift(head);
+
+                // Comeu maçã normal
+                if (head.x === this.food.x && head.y === this.food.y) {
+                    this.updateScore(10);
+                    this.sound.playEat();
+                    this.spawnFood();
+
+                    if (Math.random() < 0.25 && !this.shrinkFood.active) {
+                        this.spawnShrinkFood();
+                    }
+                } 
+                // Comeu a pílula amarela (encolhe + acelera por 1 segundo)
+                else if (this.shrinkFood.active && head.x === this.shrinkFood.x && head.y === this.shrinkFood.y) {
+                    this.shrinkFood.active = false;
+                    if (this.shrinkTimer) clearTimeout(this.shrinkTimer);
+                    this.sound.playShrink();
+                    this.updateScore(15);
+                    
+                    // Ativa aceleração por 1 segundo e efeito piscando
+                    this.gameInterval = this.fastInterval;
+                    this.speedBoostEndTime = Date.now() + 1000;
+
+                    if (this.snake.length > 3) {
+                        this.snake.pop();
+                    }
+                    this.snake.pop();
+                } 
+                else {
+                    this.snake.pop();
+                }
+            }
+
+            triggerGameOver() {
+                this.isGameOver = true;
+                this.sound.playGameOver();
+                if (this.shrinkTimer) clearTimeout(this.shrinkTimer);
+                
+                const overlay = document.getElementById('gameOverlay');
+                document.getElementById('overlayTitle').innerText = 'Fim de Jogo!';
+                document.getElementById('overlayText').innerText = `Sua pontuação final foi ${this.score}.`;
+                document.getElementById('overlayBtn').innerText = 'Tentar de Novo';
+                overlay.classList.add('active');
+            }
+
+            render() {
+                this.ctx.fillStyle = '#18181b';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Maçã normal
+                this.ctx.fillStyle = '#e74c3c';
+                this.ctx.beginPath();
+                let fx = this.food.x * this.gridSize + this.gridSize / 2;
+                let fy = this.food.y * this.gridSize + this.gridSize / 2;
+                this.ctx.arc(fx, fy, this.gridSize / 2 - 2, 0, Math.PI * 2);
+                this.ctx.fill();
+
+                // Pílula amarela
+                if (this.shrinkFood.active) {
+                    this.ctx.fillStyle = '#f1c40f';
+                    this.ctx.beginPath();
+                    let sx = this.shrinkFood.x * this.gridSize + this.gridSize / 2;
+                    let sy = this.shrinkFood.y * this.gridSize + this.gridSize / 2;
+                    this.ctx.arc(sx, sy, this.gridSize / 2 - 3, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+
+                // Efeito de piscar em amarelo durante o boost de velocidade
+                let isBoosting = Date.now() < this.speedBoostEndTime;
+                let flashYellow = isBoosting && (Math.floor(Date.now() / 100) % 2 === 0);
+
+                // Cobrinha
+                this.snake.forEach((part, index) => {
+                    if (flashYellow) {
+                        this.ctx.fillStyle = '#f1c40f';
+                    } else {
+                        this.ctx.fillStyle = index === 0 ? '#2ecc71' : '#27ae60';
+                    }
+
+                    let px = part.x * this.gridSize + 1;
+                    let py = part.y * this.gridSize + 1;
+                    let pSize = this.gridSize - 2;
+                    this.ctx.beginPath();
+                    this.ctx.roundRect(px, py, pSize, pSize, 6);
+                    this.ctx.fill();
+                });
+            }
+
+            loop(timestamp) {
+                if (!this.lastTime) this.lastTime = timestamp;
+                let elapsed = timestamp - this.lastTime;
+
+                if (elapsed > this.gameInterval) {
+                    this.lastTime = timestamp;
+                    this.update();
+                    this.render();
+                }
+
+                requestAnimationFrame(this.loop.bind(this));
+            }
+        }
+
+        const game = new SnakeGame();
+    </script>
+</body>
+</html>
