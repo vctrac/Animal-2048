@@ -1,4 +1,6 @@
-# Animal-2048
-2048 com bichinhos
+# Collection of small ai games
 
-https://vctrac.github.io/Animal-2048/
+more will be added in the future...
+
+dedicated to my son.
+I hope we make games together.
