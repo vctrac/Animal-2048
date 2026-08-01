@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade Hub 🕹️ - Mini Games</title>
+    <style>
+        :root {
+            --bg-color: #121214;
+            --card-bg: #202024;
+            --card-border: #29292e;
+            --text-primary: #e1e1e6;
+            --text-secondary: #a8a8b3;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 900px;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            margin-top: 20px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin: 0 0 10px 0;
+            background: linear-gradient(45deg, #f39c12, #27ae60);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+            letter-spacing: -1px;
+        }
+        p.subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin: 0;
+        }
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+        }
+        .game-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        .game-card:hover {
+            transform: translateY(-4px);
+            border-color: #3f3f46;
+        }
+        .game-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+        .game-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin: 0 0 8px 0;
+            color: #fff;
+        }
+        .game-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin: 0 0 20px 0;
+            line-height: 1.4;
+        }
+        .btn-play {
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            padding: 10px 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            transition: opacity 0.2s, transform 0.1s;
+            display: block;
+        }
+        .btn-play:hover {
+            opacity: 0.9;
+        }
+        .btn-play:active {
+            transform: scale(0.97);
+        }
+        footer {
+            margin-top: auto;
+            padding: 40px 0 20px 0;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Arcade Hub 🕹️</h1>
+            <p class="subtitle">Uma coleção de mini-jogos rápidos desenvolvidos em HTML5</p>
+        </header>
+
+        <main>
+            <div class="games-grid" id="gamesGrid">
+                <!-- Os jogos são gerados dinamicamente via script -->
+            </div>
+        </main>
+
+        <footer>
+            Feito com HTML5 & JavaScript • Hospedado no GitHub Pages
+        </footer>
+    </div>
+
+    <script>
+        // =========================================================================
+        // ADICIONE NOVOS JOGOS AQUI NO FUTURO
+        // =========================================================================
+        const games = [
+            {
+                title: "Animal Evolution 2048",
+                description: "Evolua os animais combinando espécies neste clássico viciante em formato 2048 otimizado para celulares.",
+                folder: "bichos2048",
+                icon: "🐳",
+                accent: "#27ae60"
+            }
+            // Exemplo de como adicionar um próximo jogo na pasta games/:
+            // {
+            //     title: "Meu Segundo Jogo",
+            //     description: "Breve descrição do novo jogo.",
+            //     folder: "nome-da-pasta-do-jogo",
+            //     icon: "🚀",
+            //     accent: "#e67e22"
+            // }
+        ];
+
+        const grid = document.getElementById('gamesGrid');
+
+        games.forEach(game => {
+            const card = document.createElement('div');
+            card.className = 'game-card';
+            card.innerHTML = `
+                <div>
+                    <div class="game-icon">${game.icon}</div>
+                    <h2 class="game-title">${game.title}</h2>
+                    <p class="game-desc">${game.description}</p>
+                </div>
+                <a href="games/${game.folder}/index.html" class="btn-play" style="background: ${game.accent};">Jogar Agora</a>
+            `;
+            grid.appendChild(card);
+        });
+    </script>
+</body>
+</html>
